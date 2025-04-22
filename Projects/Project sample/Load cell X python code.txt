@@ -1,0 +1,69 @@
+// You should input the weight in the same unit you plan to use for measurements, either grams or kilograms. For instance, if you calibrate using kilograms, all subsequent readings will be in kilograms.
+
+
+#include "HX711.h"
+#include <EEPROM.h>
+
+#define DOUT  3
+#define CLK  2
+
+HX711 scale;
+float calibration_factor = 1.0; // Default calibration factor
+const int eepromAddress = 0;
+bool isCalibrated = false;
+
+void setup() {
+  Serial.begin(9600);
+  scale.begin(DOUT, CLK);
+
+  // Load previous calibration factor from EEPROM
+  EEPROM.get(eepromAddress, calibration_factor);
+  Serial.print("Loaded Calibration Factor: ");
+  Serial.println(calibration_factor);
+
+  Serial.println("Enter 'Q' to skip calibration or any other key to start calibration.");
+  delay(5000);
+
+  if (Serial.available() && Serial.read() == 'Q') {
+    Serial.println("Skipping Calibration. Proceeding to Read Mode.");
+    isCalibrated = true;
+  } else {
+    calibrate();
+  }
+}
+
+void loop() {
+  if (isCalibrated) {
+    if (scale.is_ready()) {
+      long reading = scale.get_units(10);
+      Serial.println(reading); // Send data for Python to read
+    } else {
+      Serial.println("HX711 not found.");
+    }
+    delay(1000);
+  }
+}
+
+void calibrate() {
+  Serial.println("Starting Calibration...");
+  Serial.println("Place zero weight and press any key.");
+  while (!Serial.available());
+  Serial.read();
+  scale.tare();
+  Serial.println("Tare complete.");
+
+  Serial.println("Place a known weight and enter its value:");
+  while (!Serial.available());
+  float knownWeight = Serial.parseFloat();
+
+  Serial.println("Reading... ");
+  long reading = scale.get_units(10);
+
+  calibration_factor = reading / knownWeight;
+  Serial.print("New Calibration Factor: ");
+  Serial.println(calibration_factor);
+
+  EEPROM.put(eepromAddress, calibration_factor);
+  Serial.println("Calibration factor saved to EEPROM.");
+  isCalibrated = true;
+}
