@@ -1,0 +1,27 @@
+Project FORMAT
+For each project list and mention the following for each tiles and subtitles:
+
+= Project Title:
+	Small title the describes the project or Name of the Project
+= Objective:
+	Objective of the project includes: aim/goal/reason/incentive for the Project
+= Description:
+	A small summary of What the project is , and how its undertaken, if the project 
+	undergoing, You can mention ongoing process and experinence
+= Team Members:
+	members involved and their contributions
+= Timeline & Phases (Design, Build, Test, Launch):
+	Timeline of the project, with specific dates of events , meetings, work days with work progress clearly mentioned
+= Technical Details:
+	Mention all the technical details About the projects here, All versions , edits or changes and explain what,why 
+	these changes where needed , ALso include the Outcome for each test/Activity/Record etc, in detail for Future reference
+= Outcomes (Success/failure, learning points)
+	Mention the Overall out come of the Project, Whether the Ogjective was reached, Any other outcomes, Learning Opportunities etc 
+
+= Photos, Diagrams, Videos:
+	Add photos and videos in a folder names "Media" inside this folder
+= Budget / Resource Log (if needed)
+	Make note of All buget requirements and Spending here, 
+	Also mention all budget for the Project, Even if its planned or spent, 
+		If the budget was spent mention a "✅" to the amount 
+		If the buget was spent and was sponsored "👍" also with tick
