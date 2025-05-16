@@ -1,0 +1,10 @@
+## Vision
+This club aims to serve as a platform for students passionate about electronics, focusing
+on strengthening both the practical and theoretical understanding of this dynamic field.
+
+
+## Mission
+Motor Design and Chemistry
+To focus on the development of rocket motors, including the study and application of chemical propellants. 
+This will not only provide a practical understanding of chemistry but also enable the club to create custom-built
+ rocket engines, a critical aspect of rocketry.

@@ -1,0 +1,27 @@
+`Potential Faults`
+- The Arduio data analysis Fails to record data
+- The calibration of Load cell measurement is Skewed
+- The Ignitor Fails to Start the Motor
+- The Motor Underperforms
+- The Motors Overperforms
+- Containment failure of Motor
+
+`Safety pecatuions`
+- Have the code Do Status Checks and ensures That it has steady connection with ADC  
+- Have procedures for Post processing of correcting skewed values listed out 
+- Ensure To have Back-up ignitors and atleast 2 types of ignitor
+- Analysis of The Data is requried 
+- The Motor firing will be Performed Under strict and regulator conditions, with Potential prepaared for worst case senarios
+- The Motor testing will be done with special permission and with enough safety clearence 
+- Worst Case containment Failure of Motors is not possible due to proper Engineering and Design 
+
+
+`General safety precaution`
+- Everyone Must stay behind the caculated Dead zone of 6m , We have decided with a safety distance of 10m 
+- However, Underconditions of Low SNR due to long cabling, Temporary mesurements and operators can stay within 3-6 meters with Blast Reflector and Eye and ear protection
+- In case of ignitor failure, The Arm switch should be Cut and a wait of 30s is suggested before approching the motor (15s is time required for the ignitor to cool to room temp)
+- All electronics Must be Encased in Protective cases,
+- Electronics and Workstation once setup, should not be moved , to prevent Yanking of cables and electronics Faults
+- Eye protection for those within (10m Standby zone), additional Ear protection  for those within (6m Dead Zone)
+- Non Club members should be issued a Warning of the Firing at the time of ignition.
+- Keep a Fire extinguisor at standby
