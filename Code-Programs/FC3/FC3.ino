@@ -12,12 +12,24 @@ unsigned long lastTime = 0;
 unsigned long Interval = 200; //chnage this to change time interval
 unsigned long lastSendTime = 0;
 
-float temp;
-float pre;
-float alti;
-float logtime;
+// Raw sensor data
+int16_t axRaw, ayRaw, azRaw;
+int16_t gxRaw, gyRaw, gzRaw;
 
-void recieveCommand();
+// Calibrated data in physical units
+float ax_g, ay_g, az_g;
+float gx_dps, gy_dps, gz_dps;
+float temp, pre, alti;
+
+// Offsets
+float accX_offset = 0, accY_offset = 0, accZ_offset = 0;
+float gyroX_offset = 0, gyroY_offset = 0, gyroZ_offset = 0;
+
+// Angles
+float angleX = 0, angleY = 0, angleZ = 0;
+unsigned long lastAngleTime = 0;
+
+
 
 
 //define objects and pins
@@ -33,8 +45,9 @@ FlightMode currentMode = IDLE;
 SysStatus systemStatus = OK;
 
 void setup() {
-  Serial.begin(115200);
+  
   LoRa.begin(433E6);
+  calibrateSensor();
   
 
   pinMode(payload, OUTPUT);
@@ -62,26 +75,41 @@ void loop() {
   }
 }
 
+
 }
 
 void modeManager() {
   // Check system health before doing anything
-  systemStatus = checkSystemStatus();
-  if (systemStatus != OK) {
-    currentMode = DEBUGGING;
-    return;
-  }
-
+  
  
   switch (currentMode) {
     case IDLE:
+      systemStatus = checkSystemStatus();
+      if (systemStatus != OK) {
+        currentMode = DEBUGGING;
+        return;
+      }
+
       //wait for lora;
       break;
     case INIT:
+      systemStatus = checkSystemStatus();
+      if (systemStatus != OK) {
+        currentMode = DEBUGGING;
+        return;
+      }
+
       initialize();
       break;
 
     case ARMING:
+      systemStatus = checkSystemStatus();
+      if (systemStatus != OK) {
+        currentMode = DEBUGGING;
+        return;
+      }
+
+      countdown();
       break;
 
     case DEBUGGING:
@@ -93,11 +121,11 @@ void modeManager() {
       break;
 
     case TRIG1:
-      payload();
+      deploypayload();
       break;
 
     case TRIG2:
-      parachute();
+      deployparachute();
       break;
   }
 }
@@ -151,9 +179,10 @@ void initialize() {
   int flag = 1;
 
   
-  if (!IMU.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_8G)) {
-    sendStatus("IMU init failed");
-    flag = 0;
+  IMU.initialize();
+  if (!IMU.testConnection()) {
+  sendStatus("IMU init failed");
+  flag = 0;
   }
 
  
@@ -182,13 +211,13 @@ void initialize() {
     pre = BMP.readPressure() / 100.0;
     alti = BMP.readAltitude(101325);
     datafile.println("Time,Ax,Ay,Az,Gx,Gy,Gz,Temp,Pre(hPa),Alti");
-    datafile.print(normAcc.XAxis, 4); datafile.print(",");
-    datafile.print(normAcc.YAxis, 4); datafile.print(",");
-    datafile.print(normAcc.ZAxis, 4); datafile.print(",");
+    datafile.print(ax_g, 4); datafile.print(",");
+    datafile.print(ay_g, 4); datafile.print(",");
+    datafile.print(az_g, 4); datafile.print(",");
 
-    datafile.print(normGyro.XAxis, 2); datafile.print(",");
-    datafile.print(normGyro.YAxis, 2); datafile.print(",");
-    datafile.println(normGyro.ZAxis, 2);
+    datafile.print(gx_dps, 2); datafile.print(",");
+    datafile.print(gy_dps, 2); datafile.print(",");
+    datafile.println(gz_dps, 2);
 
     sendStatus("INIT and TEST PASSED");
     currentMode = ARMING;
@@ -230,25 +259,40 @@ void launch() {
 }
 void readSensor() {
   
-  temp = BMP.readTemperature();
-  pre = BMP.readPressure() / 100.0;     // in hPa
-  alti = BMP.readAltitude(101325);          
+   // Read raw accelerometer and gyroscope values
+  imu.getAcceleration(&axRaw, &ayRaw, &azRaw);
+  imu.getRotation(&gxRaw, &gyRaw, &gzRaw);
+
+  // Read barometer values
+  temp = bmp.readTemperature();                // °C
+  pre  = bmp.readPressure() / 100.0;           // hPa
+  alti = bmp.readAltitude(101325);             // meters
+
+  // Convert accelerometer to g
+  ax_g = (axRaw - accX_offset) / 16384.0;
+  ay_g = (ayRaw - accY_offset) / 16384.0;
+  az_g = (azRaw - accZ_offset) / 16384.0;
+
+  // Convert gyroscope to degrees per second
+  gx_dps = (gxRaw - gyroX_offset) / 131.0;
+  gy_dps = (gyRaw - gyroY_offset) / 131.0;
+  gz_dps = (gzRaw - gyroZ_offset) / 131.0;       
 }
 void writeSensor() {
   if (datafile) {
-    datafile.print(normAcc.XAxis, 4); datafile.print(",");
-    datafile.print(normAcc.YAxis, 4); datafile.print(",");
-    datafile.print(normAcc.ZAxis, 4); datafile.print(",");
+  datafile.print(ax_g, 4); datafile.print(",");
+  datafile.print(ay_g, 4); datafile.print(",");
+  datafile.print(az_g, 4); datafile.print(",");
 
-    datafile.print(normGyro.XAxis, 2); datafile.print(",");
-    datafile.print(normGyro.YAxis, 2); datafile.print(",");
-    datafile.print(normGyro.ZAxis, 2); datafile.print(",");
+  datafile.print(gx_dps, 2); datafile.print(",");
+  datafile.print(gy_dps, 2); datafile.print(",");
+  datafile.print(gz_dps, 2); datafile.print(",");
 
-    datafile.print(temp, 2); datafile.print(",");
-    datafile.print(pre, 2); datafile.print(",");
-    datafile.print(alti, 2);
-    datafile.println();
-  }
+  datafile.print(temp, 2); datafile.print(",");
+  datafile.print(pre, 2); datafile.print(",");
+  datafile.print(alti, 2);
+  datafile.println();
+}
 }
 
 
@@ -262,21 +306,21 @@ void sendStatus(const char* message) {
 
 void senddata() {
   String dataMsg = "DATA,";
-  dataMsg += String(normAcc.XAxis, 2) + ",";
-  dataMsg += String(normAcc.YAxis, 2) + ",";
-  dataMsg += String(normAcc.ZAxis, 2) + ",";
-  dataMsg += String(normGyro.XAxis, 2) + ",";
-  dataMsg += String(normGyro.YAxis, 2) + ",";
-  dataMsg += String(normGyro.ZAxis, 2) + ",";
+  dataMsg += String(ax_g, 2) + ",";
+  dataMsg += String(ay_g, 2) + ",";
+  dataMsg += String(az_g, 2) + ",";
+  dataMsg += String(gx_dps, 2) + ",";
+  dataMsg += String(gy_dps, 2) + ",";
+  dataMsg += String(gz_dps, 2) + ",";
   dataMsg += String(temp, 2) + ",";
   dataMsg += String(pre, 2) + ",";
   dataMsg += String(alti, 2);
 
   sendStatus(dataMsg.c_str());
-}
+  }
 
 
-void payload(){
+void deploypayload(){
     digitalWrite(payload, HIGH);
     delay(50);
     digitalWrite(payload , LOW);
@@ -284,13 +328,67 @@ void payload(){
     currentMode = LAUNCH;
 }
 
-void parachute(){
+void deployparachute(){
     digitalWrite(parachute, HIGH);
     delay(50);
     digitalWrite(parachute , LOW);
     sendStatus("parachutes deployed");
     currentMode = LAUNCH;
 }
+
+void calibrateSensors() {
+  const int samples = 100;
+  long accXSum = 0, accYSum = 0, accZSum = 0;
+  long gyroXSum = 0, gyroYSum = 0, gyroZSum = 0;
+
+  Serial.println("Calibrating sensors... Please keep the rocket still.");
+
+  for (int i = 0; i < samples; i++) {
+    int16_t ax, ay, az, gx, gy, gz;
+    imu.getAcceleration(&ax, &ay, &az);
+    imu.getRotation(&gx, &gy, &gz);
+
+    accXSum += ax;
+    accYSum += ay;
+    accZSum += az;
+
+    gyroXSum += gx;
+    gyroYSum += gy;
+    gyroZSum += gz;
+
+    delay(5);
+  }
+
+  accX_offset = accXSum / (float)samples;
+  accY_offset = accYSum / (float)samples;
+  accZ_offset = (accZSum / (float)samples) - 16384.0; // Assuming upright
+
+  gyroX_offset = gyroXSum / (float)samples;
+  gyroY_offset = gyroYSum / (float)samples;
+  gyroZ_offset = gyroZSum / (float)samples;
+
+  Serial.println("Calibration done.");
+}
+
+void countdown() {
+  sendStatus("===================================");
+  sendStatus("[ARMING] Countdown Initiated");
+  sendStatus("===================================");
+
+  for (int i = 5; i >= 1; i--) {
+    String msg = ">>> T - " + String(i) + " seconds";
+    sendStatus(msg.c_str());
+    delay(1000);
+  }
+
+  sendStatus("===================================");
+  sendStatus(">>> Countdown Complete");
+  sendStatus(">>> Awaiting LIFTOFF...");
+  sendStatus("===================================");
+}
+
+
+
 
 void receiveCommand() {
   if (LoRa.parsePacket()) {

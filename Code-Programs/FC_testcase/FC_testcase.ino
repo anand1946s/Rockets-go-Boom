@@ -92,50 +92,26 @@ void loop() {
 }
 
 void readSensors() {
-  const int samples = 1;
-  long axSum = 0, aySum = 0, azSum = 0;
-  long gxSum = 0, gySum = 0, gzSum = 0;
-  float tempSum = 0, preSum = 0, altiSum = 0;
+  // Get raw readings from MPU6050
+  imu.getAcceleration(&axRaw, &ayRaw, &azRaw);
+  imu.getRotation(&gxRaw, &gyRaw, &gzRaw);
 
-  for (int i = 0; i < samples; i++) {
-    imu.getAcceleration(&axRaw, &ayRaw, &azRaw);
-    imu.getRotation(&gxRaw, &gyRaw, &gzRaw);
+  // Read barometric data (if BMP180 is used)
+  temp = bmp.readTemperature();                // °C
+  pre  = bmp.readPressure() / 100.0;           // hPa
+  alti = bmp.readAltitude(101325);             // meters (sea level pressure as reference)
 
-    axSum += axRaw;
-    aySum += ayRaw;
-    azSum += azRaw;
-    gxSum += gxRaw;
-    gySum += gyRaw;
-    gzSum += gzRaw;
-
-    tempSum += bmp.readTemperature();
-    preSum  += bmp.readPressure() / 100.0;
-    altiSum += bmp.readAltitude(101325);
-
-    delay(3);
-  }
-
-  // Convert to average raw values
-  axRaw = axSum / samples;
-  ayRaw = aySum / samples;
-  azRaw = azSum / samples;
-  gxRaw = gxSum / samples;
-  gyRaw = gySum / samples;
-  gzRaw = gzSum / samples;
-
-  temp = tempSum / samples;
-  pre  = preSum / samples;
-  alti = altiSum / samples;
-
-  // Convert to physical units
+  // Convert raw acceleration to g (assuming ±2g range)
   ax_g = (axRaw - accX_offset) / 16384.0;
   ay_g = (ayRaw - accY_offset) / 16384.0;
   az_g = (azRaw - accZ_offset) / 16384.0;
 
+  // Convert raw gyro data to degrees/sec (assuming ±250°/s range)
   gx_dps = (gxRaw - gyroX_offset) / 131.0;
   gy_dps = (gyRaw - gyroY_offset) / 131.0;
   gz_dps = (gzRaw - gyroZ_offset) / 131.0;
 }
+
 
 void calibrateSensors() {
   const int samples = 100;
