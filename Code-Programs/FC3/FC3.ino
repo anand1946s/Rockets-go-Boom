@@ -6,8 +6,42 @@
 #include <Adafruit_BMP085.h>
 #include <LoRa.h>
 
+
+
+//define enums
+enum FlightMode { IDLE,INIT,ARMING, DEBUGGING, LAUNCH, TRIG1, TRIG2 };
+enum SysStatus { OK, HALT };
+
+SysStatus checkSystemStatus();
+
+
+
+void receiveCommand();
+void countdown();
+void calibrateSensors(); 
+void deploypayload();
+void deploypayload();
+void senddata();
+void sendStatus();
+void writeSensor();
+void readSensor();
+void launch();
+void debugging();
+void initialize();
+bool systemCheck();
+void modeManager();
+
+
+int payload=2;
+int parachute=3;
+const int CS = 10;
+
+bool SDFailed() {
+  return !SD.begin(CS);  // Re-attempt to initialize SD card
+}
+
 //define variables
-const int CS = 10;  //Cs pin
+  //Cs pin
 unsigned long lastTime = 0;
 unsigned long Interval = 200; //chnage this to change time interval
 unsigned long lastSendTime = 0;
@@ -37,17 +71,15 @@ MPU6050 IMU;
 Adafruit_BMP085 BMP;
 File datafile;
 
-//define enums
-enum FlightMode { IDLE,INIT,ARMING, DEBUGGING, LAUNCH, TRIG1, TRIG2 };
-enum SysStatus { OK, HALT };
+
 
 FlightMode currentMode = IDLE;
 SysStatus systemStatus = OK;
 
 void setup() {
-  
+  Serial.begin(9600);  
   LoRa.begin(433E6);
-  calibrateSensor();
+  calibrateSensors();
   
 
   pinMode(payload, OUTPUT);
@@ -57,7 +89,7 @@ void setup() {
 
 // === Loop ===
 void loop() {
-  recieveCommand();
+  receiveCommand();
   if(currentMode==INIT){
     modeManager();
   }
@@ -141,8 +173,8 @@ SysStatus checkSystemStatus() {
 bool systemCheck() {
   bool ok = true;
 
-  
-  if (!IMU.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_8G)) {
+  IMU.initialize();
+  if (!IMU.testConnection()) {
     sendStatus("IMU check failed");
     ok = false;
   }
@@ -237,12 +269,12 @@ void debugging() {
     sendStatus("RESULT: SD Failed");
   }
 
-  if (sensorFailed()) {
-    sendStatus("RESULT: Sensor Failed");
-  }
-  if (ignitorFailed()) {
-    sendStatus("RESULT: Ignitor Failed");
-  }
+  // if (sensorFailed()) {
+  //   sendStatus("RESULT: Sensor Failed");
+  // }
+  // if (ignitorFailed()) {
+  //   sendStatus("RESULT: Ignitor Failed");
+  // }
 
   if (checkSystemStatus() == OK) {
     sendStatus("Sys recovered . Entering INIT");
@@ -260,13 +292,13 @@ void launch() {
 void readSensor() {
   
    // Read raw accelerometer and gyroscope values
-  imu.getAcceleration(&axRaw, &ayRaw, &azRaw);
-  imu.getRotation(&gxRaw, &gyRaw, &gzRaw);
+  IMU.getAcceleration(&axRaw, &ayRaw, &azRaw);
+  IMU.getRotation(&gxRaw, &gyRaw, &gzRaw);
 
   // Read barometer values
-  temp = bmp.readTemperature();                // °C
-  pre  = bmp.readPressure() / 100.0;           // hPa
-  alti = bmp.readAltitude(101325);             // meters
+  temp = BMP.readTemperature();                // °C
+  pre  = BMP.readPressure() / 100.0;           // hPa
+  alti = BMP.readAltitude(101325);             // meters
 
   // Convert accelerometer to g
   ax_g = (axRaw - accX_offset) / 16384.0;
@@ -345,8 +377,8 @@ void calibrateSensors() {
 
   for (int i = 0; i < samples; i++) {
     int16_t ax, ay, az, gx, gy, gz;
-    imu.getAcceleration(&ax, &ay, &az);
-    imu.getRotation(&gx, &gy, &gz);
+    IMU.getAcceleration(&ax, &ay, &az);
+    IMU.getRotation(&gx, &gy, &gz);
 
     accXSum += ax;
     accYSum += ay;
