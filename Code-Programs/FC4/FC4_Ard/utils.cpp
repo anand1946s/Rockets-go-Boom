@@ -7,7 +7,7 @@
 
 // TEMP system check: always OK for now
 SysStatus systemCheck() {
-    Serial.println("Running system checks...");
+    
     // You can later check actual init flags
     return OK;
 }

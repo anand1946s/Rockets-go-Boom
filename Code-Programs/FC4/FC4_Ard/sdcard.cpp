@@ -9,10 +9,9 @@ File dataFile;
 
 bool initSD(){
     if(!SD.begin(SD_CS)){
-        Serial.println("SD init failed");
         return false;
     }
-     Serial.println("SD card initialized.");
+     
      return true;
     
 }
@@ -25,7 +24,7 @@ bool logData(const String& data){
         return true;
     }
     else{
-        Serial.println("Failed to open sd");
+        
         return false;
     }
 }

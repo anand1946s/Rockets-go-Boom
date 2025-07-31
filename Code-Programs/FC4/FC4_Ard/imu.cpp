@@ -14,10 +14,10 @@ void initIMU() {
   imu.initialize();
 
   if (!imu.testConnection()) {
-    sendStatus("IMU connection failed!");
+    return false;
     // Optionally, set a status flag or halt
   } else {
-    sendStatus("IMU connected!");
+    return true;
   }
 }
 
@@ -46,7 +46,7 @@ void calibrateIMU() {
   gyroY_offset = gyroY_sum / (float)numSamples;
   gyroZ_offset = gyroZ_sum / (float)numSamples;
 
-  sendStatus("Callibration Done!!");
+  sendStatus("Calb Done!!");
 }
 
 void readIMU(float &ax, float &ay, float &az, float &gx, float &gy, float &gz) {

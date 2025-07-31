@@ -37,7 +37,18 @@ void setup() {
 }
 
 void loop() {
-  checkCmd();
+ String cmd = checkCmd();  // Get command from LoRa
+
+  if (cmd == "ARM") {
+    currentMode = INIT;
+  } else if (cmd == "LAUNCH") {
+      if (checkSystemStatus() == OK) {
+        currentMode = LAUNCH;
+      } 
+      else {
+      currentMode = DEBUGGING;  // or SAFE, if you use that
+          }
+  }
 
   if (currentMode == INIT) {
     modeManager();

@@ -8,10 +8,10 @@ Adafruit_BMP085 bmp;
 
 void initBMP() {
   if (!bmp.begin()) {
-    Serial.println("BMP180 connection failed!");
+      return true;
     // Optionally set a flag or halt the system
   } else {
-    Serial.println("BMP180 initialized.");
+      return false;
   }
 }
 
