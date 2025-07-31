@@ -41,9 +41,8 @@ void sendStatus(String msg) {
     LoRa.beginPacket();
     LoRa.print(msg);
     LoRa.endPacket();
-    Serial.print("Sent: ");
-    Serial.println(msg);
 }
+
 
 void sendData() {
     float ax, ay, az, gx, gy, gz;

@@ -9,7 +9,7 @@ File dataFile;
 
 bool initSD(){
     if(!SD.begin(SD_CS)){
-        Serial.println("SD initialised");
+        Serial.println("SD init failed");
         return false;
     }
      Serial.println("SD card initialized.");
