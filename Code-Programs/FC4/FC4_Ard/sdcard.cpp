@@ -3,7 +3,7 @@
 #include<SPI.h>
 #include <SD.h>
 
-const int SD_CS =10;
+
 
 File dataFile;
 

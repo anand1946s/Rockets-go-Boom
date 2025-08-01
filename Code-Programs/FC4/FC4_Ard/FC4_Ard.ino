@@ -41,7 +41,8 @@ void loop() {
 
   if (cmd == "ARM") {
     currentMode = INIT;
-  } else if (cmd == "LAUNCH") {
+  } 
+  else if (cmd == "LAUNCH") {
       if (checkSystemStatus() == OK) {
         currentMode = LAUNCH;
       } 

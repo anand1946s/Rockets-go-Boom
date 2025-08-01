@@ -4,6 +4,7 @@
 #include "sdcard.h"
 #include "lora.h"
 #include "utils.h"
+#include "config.h"
 
 extern FlightMode currentMode;
 extern SysStatus systemStatus;
@@ -72,16 +73,20 @@ void debugging() {
 
 void launch() {
   logData();
+  pinMode(IGNITE_PIN,OUTPUT);
+  digitalWrite(IGNITE_PIN,HIGH);
   sendStatus("Logging and transmitting...");
 
 }
 
 void deploypayload() {
-  digitalWrite(2, HIGH);
+  pinMode(PAYLOAD_PIN,OUTPUT);
+  digitalWrite(PAYLOAD_PIN, HIGH);
   sendStatus("Payload deployed!");
 }
 
 void deployparachute() {
-  digitalWrite(3, HIGH);
+  pinMode(PARACHUTE_PIN,OUTPUT);
+  digitalWrite(PARACHUTE_PIN, HIGH);
   sendStatus("Parachute deployed!");
 }

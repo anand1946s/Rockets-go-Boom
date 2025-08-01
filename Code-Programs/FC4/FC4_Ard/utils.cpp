@@ -8,11 +8,11 @@
 // TEMP system check: always OK for now
 SysStatus systemCheck() {
     
-    // You can later check actual init flags
+    //change this stuff
     return OK;
 }
 
-// TEMP logger: just prints to Serial for now
+
 void logData() {
     float ax, ay, az, gx, gy, gz;
     readIMU(ax, ay, az, gx, gy, gz);
