@@ -6,6 +6,14 @@
 enum FlightMode { IDLE, INIT, ARMING, DEBUGGING, LAUNCH, TRIG1, TRIG2 };
 enum SysStatus { OK, HALT };
 
+//pins
+const int PARACHUTE_PIN = 9;
+const int PAYLOAD_PIN = 8;
+const int IGNITE_PIN = 7;
+const int SD_CS =11;
+
+
+
 
 extern FlightMode currentMode;
 extern SysStatus systemStatus;

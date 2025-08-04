@@ -30,14 +30,27 @@ void setup() {
   initLoRa();
   initSD();
 
-  pinMode(2, OUTPUT);  // Payload
-  pinMode(3, OUTPUT);  // Parachute
+  pinMode(PAYLOAD_PIN, OUTPUT);  // Payload
 
-  sendStatus("System Ready. Waiting for ARM command...");
+  pinMode(PARACHUTE_PIN, OUTPUT);  // Parachute
+
+  sendStatus("System Ready");
 }
 
 void loop() {
-  checkCmd();
+ String cmd = checkCmd();  // Get command from LoRa
+
+  if (cmd == "ARM") {
+    currentMode = INIT;
+  } 
+  else if (cmd == "LAUNCH") {
+      if (checkSystemStatus() == OK) {
+        currentMode = LAUNCH;
+      } 
+      else {
+      currentMode = DEBUGGING;  // or SAFE, if you use that
+          }
+  }
 
   if (currentMode == INIT) {
     modeManager();

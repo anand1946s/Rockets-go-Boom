@@ -17,10 +17,10 @@ bool initLoRa() {
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
     
     if (!LoRa.begin(LORA_FREQ)) {
-        Serial.println("LoRa init failed");
+        
         return false;
     } else {
-        Serial.println("LoRa init success");
+        
         return true;
     }
 }
@@ -37,13 +37,13 @@ String checkCmd() {
     return "";  // No message
 }
 
+
 void sendStatus(String msg) {
     LoRa.beginPacket();
     LoRa.print(msg);
     LoRa.endPacket();
-    Serial.print("Sent: ");
-    Serial.println(msg);
 }
+
 
 void sendData() {
     float ax, ay, az, gx, gy, gz;

@@ -1,5 +1,5 @@
 #include "imu.h"
-
+#include "lora.h"
 #include <Wire.h>
 #include <MPU6050.h>
 
@@ -9,15 +9,15 @@ MPU6050 imu;
 float accX_offset = 0, accY_offset = 0, accZ_offset = 0;
 float gyroX_offset = 0, gyroY_offset = 0, gyroZ_offset = 0;
 
-void initIMU() {
+bool initIMU() {
   Wire.begin();
   imu.initialize();
 
   if (!imu.testConnection()) {
-    Serial.println("IMU connection failed!");
+    return false;
     // Optionally, set a status flag or halt
   } else {
-    Serial.println("IMU connected!");
+    return true;
   }
 }
 
@@ -45,6 +45,8 @@ void calibrateIMU() {
   gyroX_offset = gyroX_sum / (float)numSamples;
   gyroY_offset = gyroY_sum / (float)numSamples;
   gyroZ_offset = gyroZ_sum / (float)numSamples;
+
+  sendStatus("Calb Done!!");
 }
 
 void readIMU(float &ax, float &ay, float &az, float &gx, float &gy, float &gz) {
