@@ -57,9 +57,10 @@ void modeManager() {
 bool initialize() {
   bool imuOK = initIMU();
   bool bmpOK = initBMP();
-
-  return imuOK && bmpOK;
   currentMode = ARMING;
+  sendStatus("Ready to launch");
+  return imuOK && bmpOK;
+  
 }
 
 

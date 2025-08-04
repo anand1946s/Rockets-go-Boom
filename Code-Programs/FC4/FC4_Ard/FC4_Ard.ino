@@ -17,24 +17,34 @@ SysStatus systemStatus = OK;
 unsigned long lastTime = 0;
 unsigned long lastSendTime = 0;
 const unsigned long Interval = 1000;
+const unsigned long sendInterval =2000;
 
 File datafile;
 
 void setup() {
-  Serial.begin(9600);
 
-  initIMU();
-  calibrateIMU();
+  if(initIMU() && initBMP() && initLoRa() && initSD()){
+    systemStatus = OK;
+    calibrateIMU();
 
-  initBMP();
-  initLoRa();
-  initSD();
+    datafile = SD.open("samples.csv",FILE_WRITE);
+    if(!datafile) systemStatus = HALT;
+    else{
+      datafile.println(F("T(ms),Ax,Ay,Az,Gx,Gy,Gz,Alti,Pre,Temp"));
+      datafile.flush();
 
-  pinMode(PAYLOAD_PIN, OUTPUT);  // Payload
+    }
 
-  pinMode(PARACHUTE_PIN, OUTPUT);  // Parachute
-
-  sendStatus("System Ready");
+    pinMode(PAYLOAD_PIN, OUTPUT);
+    pinMode(PARACHUTE_PIN, OUTPUT);
+    
+    sendStatus("All good");
+  }
+  else{
+    systemStatus = HALT;
+    sendStatus("sensor error");
+  }
+    
 }
 
 void loop() {
@@ -63,7 +73,7 @@ void loop() {
       datafile.flush();
     }
 
-    if (millis() - lastSendTime >= 2000) {
+    if (millis() - lastSendTime >= sendInterval) {
       lastSendTime = millis();
       sendData();
     }

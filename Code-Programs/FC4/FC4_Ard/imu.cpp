@@ -2,6 +2,7 @@
 #include "lora.h"
 #include <Wire.h>
 #include <MPU6050.h>
+#include "config.h"
 
 
 MPU6050 imu;
