@@ -21,20 +21,29 @@ const unsigned long Interval = 1000;
 File datafile;
 
 void setup() {
-  Serial.begin(9600);
 
-  initIMU();
-  calibrateIMU();
+  if(initIMU() && initBMP() && initLoRa() && initSD()){
+    systemStatus = OK;
+    calibrateIMU();
 
-  initBMP();
-  initLoRa();
-  initSD();
+    datafile = SD.open("samples.csv",FILE_WRITE);
+    if(!datafile) systemStatus = HALT;
+    else{
+      datafile.println(F("Time(ms),Ax,Ay,Az,Gx,Gy,Gz,Alti,Pre,Temp"));
+      datafile.flush();
 
-  pinMode(PAYLOAD_PIN, OUTPUT);  // Payload
+    }
 
-  pinMode(PARACHUTE_PIN, OUTPUT);  // Parachute
-
-  sendStatus("System Ready");
+    pinMode(PAYLOAD_PIN, OUTPUT);
+    pinMode(PARACHUTE_PIN, OUTPUT);
+    
+    sendStatus("All good");
+  }
+  else{
+    systemStatus = HALT;
+    sendStatus("sensor error");
+  }
+    
 }
 
 void loop() {

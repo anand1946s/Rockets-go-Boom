@@ -8,7 +8,6 @@
 // TEMP system check: always OK for now
 SysStatus systemCheck() {
     
-    //change this stuff
     return OK;
 }
 
