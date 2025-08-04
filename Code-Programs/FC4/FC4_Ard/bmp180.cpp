@@ -1,4 +1,5 @@
 #include "bmp180.h"
+#include "config.h"
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085.h>

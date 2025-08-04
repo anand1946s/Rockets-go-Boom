@@ -17,6 +17,8 @@ bool initLoRa() {
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
     
     if (!LoRa.begin(LORA_FREQ)) {
+        LoRa.setTxPower(10); // 10 dBm = 10 mW
+
         
         return false;
     } else {

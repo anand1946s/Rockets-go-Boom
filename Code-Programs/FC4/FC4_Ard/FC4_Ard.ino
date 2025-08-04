@@ -17,6 +17,7 @@ SysStatus systemStatus = OK;
 unsigned long lastTime = 0;
 unsigned long lastSendTime = 0;
 const unsigned long Interval = 1000;
+const unsigned long sendInterval =2000;
 
 File datafile;
 
@@ -29,7 +30,7 @@ void setup() {
     datafile = SD.open("samples.csv",FILE_WRITE);
     if(!datafile) systemStatus = HALT;
     else{
-      datafile.println(F("Time(ms),Ax,Ay,Az,Gx,Gy,Gz,Alti,Pre,Temp"));
+      datafile.println(F("T(ms),Ax,Ay,Az,Gx,Gy,Gz,Alti,Pre,Temp"));
       datafile.flush();
 
     }
@@ -72,7 +73,7 @@ void loop() {
       datafile.flush();
     }
 
-    if (millis() - lastSendTime >= 2000) {
+    if (millis() - lastSendTime >= sendInterval) {
       lastSendTime = millis();
       sendData();
     }

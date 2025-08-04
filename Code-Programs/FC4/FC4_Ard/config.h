@@ -15,9 +15,9 @@ const int SD_CS =11;
 
 
 
-extern FlightMode currentMode;
-extern SysStatus systemStatus;
-extern File dataFile;
+
+
+
 
 // Timers
 extern unsigned long lastTime;
@@ -25,6 +25,6 @@ extern unsigned long lastSendTime;
 extern const unsigned long Interval;
 
 // Other global objects
-extern File dataFile;
+extern File datafile;
 
 #endif

@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "config.h"
 #include "imu.h"
 #include "bmp180.h"
 #include "sdcard.h"
@@ -23,6 +24,7 @@ void logData() {
                   String(ax) + "," + String(ay) + "," + String(az) + "," +
                   String(gx) + "," + String(gy) + "," + String(gz) + "," +
                   String(temp) + "," + String(pressure) + "," + String(altitude);
+    datafile.println(data);
 
     
 }

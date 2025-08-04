@@ -1,6 +1,6 @@
 #include "sdcard.h"
 #include "config.h"
-#include<SPI.h>
+#include <SPI.h>
 #include <SD.h>
 
 
@@ -16,10 +16,9 @@ bool initSD(){
 }
 
 bool logData(const String& data){
-    dataFile = SD.open("data.csv",FILE_WRITE);
-    if(dataFile){
-        dataFile.println(data);
-        dataFile.close();
+    if(datafile){
+        datafile.println(data);
+        datafile.close();
         return true;
     }
     else{
