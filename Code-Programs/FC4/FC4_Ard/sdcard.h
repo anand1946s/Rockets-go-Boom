@@ -5,6 +5,6 @@
 #include <Arduino.h>
 
 bool initSD();
-bool loagData(const String& data);
+bool logData(const String& data);
 
 #endif

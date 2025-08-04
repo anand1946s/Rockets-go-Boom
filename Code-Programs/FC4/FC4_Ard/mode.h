@@ -6,7 +6,7 @@
 void modeManager();
 SysStatus checkSystemStatus();
 
-void initialize();
+bool initialize();
 void debugging();
 void countdown();
 void launch();

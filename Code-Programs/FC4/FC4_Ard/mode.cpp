@@ -54,15 +54,18 @@ void modeManager() {
   }
 }
 
-void initialize() {
-  sendStatus("Initializing...");
-  // Init steps if needed
+bool initialize() {
+  bool imuOK = initIMU();
+  bool bmpOK = initBMP();
+
+  return imuOK && bmpOK;
   currentMode = ARMING;
 }
 
+
 void countdown() {
-  sendStatus("Arming countdown started...");
-  delay(5000);  // Just a placeholder
+  sendStatus("countdown started...");
+  delay(7000);  // Just a placeholder
   currentMode = LAUNCH;
 }
 
@@ -75,7 +78,7 @@ void launch() {
   logData();
   pinMode(IGNITE_PIN,OUTPUT);
   digitalWrite(IGNITE_PIN,HIGH);
-  sendStatus("Logging and transmitting...");
+  
 
 }
 

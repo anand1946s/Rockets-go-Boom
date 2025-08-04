@@ -5,7 +5,6 @@
 
 
 
-File dataFile;
 
 bool initSD(){
     if(!SD.begin(SD_CS)){

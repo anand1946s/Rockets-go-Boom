@@ -9,7 +9,7 @@ MPU6050 imu;
 float accX_offset = 0, accY_offset = 0, accZ_offset = 0;
 float gyroX_offset = 0, gyroY_offset = 0, gyroZ_offset = 0;
 
-void initIMU() {
+bool initIMU() {
   Wire.begin();
   imu.initialize();
 

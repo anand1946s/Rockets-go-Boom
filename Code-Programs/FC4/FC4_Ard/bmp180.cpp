@@ -6,7 +6,7 @@
 // Create BMP180 object
 Adafruit_BMP085 bmp;
 
-void initBMP() {
+bool initBMP() {
   if (!bmp.begin()) {
       return true;
     // Optionally set a flag or halt the system

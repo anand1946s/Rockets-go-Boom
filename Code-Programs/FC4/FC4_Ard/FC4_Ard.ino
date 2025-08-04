@@ -30,10 +30,11 @@ void setup() {
   initLoRa();
   initSD();
 
-  pinMode(2, OUTPUT);  // Payload
-  pinMode(3, OUTPUT);  // Parachute
+  pinMode(PAYLOAD_PIN, OUTPUT);  // Payload
 
-  sendStatus("System Ready. Waiting for ARM command...");
+  pinMode(PARACHUTE_PIN, OUTPUT);  // Parachute
+
+  sendStatus("System Ready");
 }
 
 void loop() {
