@@ -1,8 +1,9 @@
 #include "imu.h"
 #include "lora.h"
+#include "config.h"
+
 #include <Wire.h>
 #include <MPU6050.h>
-#include "config.h"
 
 
 MPU6050 imu;
@@ -23,7 +24,7 @@ bool initIMU() {
 }
 
 void calibrateIMU() {
-  const int numSamples = 500;
+  const int numSamples = 100;
   long accX_sum = 0, accY_sum = 0, accZ_sum = 0;
   long gyroX_sum = 0, gyroY_sum = 0, gyroZ_sum = 0;
 

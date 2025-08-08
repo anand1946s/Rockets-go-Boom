@@ -61,6 +61,9 @@ void loop() {
       currentMode = DEBUGGING;  // or SAFE, if you use that
           }
   }
+  else if(cmd == "ABORT"){
+    currentMode = IDLE;
+  }
 
   if (currentMode == INIT) {
     modeManager();

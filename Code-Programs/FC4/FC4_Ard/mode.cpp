@@ -9,6 +9,9 @@
 extern FlightMode currentMode;
 extern SysStatus systemStatus;
 
+unsigned long payTime = 0;
+unsigned long paraTime = 0;
+
 SysStatus checkSystemStatus() {
   if (!systemCheck()) {
     return HALT;
@@ -23,6 +26,8 @@ void modeManager() {
     currentMode = DEBUGGING;
     return;
   }
+
+  if( currentMode = LAUNCH && )
 
   switch (currentMode) {
     case IDLE:
