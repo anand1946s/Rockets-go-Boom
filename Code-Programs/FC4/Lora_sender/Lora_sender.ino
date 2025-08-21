@@ -8,7 +8,7 @@
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
+
 
   Serial.println("LoRa Custom Sender");
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
@@ -30,6 +30,7 @@ void loop() {
     if (message.length() > 0) {
       LoRa.beginPacket();
       LoRa.print(message);
+      
       LoRa.endPacket();
 
       Serial.print("Sent: ");

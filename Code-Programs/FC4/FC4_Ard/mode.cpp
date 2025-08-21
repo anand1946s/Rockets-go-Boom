@@ -8,9 +8,9 @@
 
 extern FlightMode currentMode;
 extern SysStatus systemStatus;
+extern unsigned long PAYTIME;
+extern unsigned long PARATIME;
 
-unsigned long payTime = 0;
-unsigned long paraTime = 0;
 
 SysStatus checkSystemStatus() {
   if (!systemCheck()) {
@@ -27,7 +27,7 @@ void modeManager() {
     return;
   }
 
-  if( currentMode = LAUNCH && )
+  
 
   switch (currentMode) {
     case IDLE:
@@ -62,18 +62,12 @@ void modeManager() {
 bool initialize() {
   bool imuOK = initIMU();
   bool bmpOK = initBMP();
-  currentMode = ARMING;
   sendStatus("Ready to launch");
   return imuOK && bmpOK;
   
 }
 
 
-void countdown() {
-  sendStatus("countdown started...");
-  delay(7000);  // Just a placeholder
-  currentMode = LAUNCH;
-}
 
 void debugging() {
   sendStatus("Debugging Mode: Check sensors and reset.");
@@ -82,10 +76,17 @@ void debugging() {
 
 void launch() {
   logData();
-  pinMode(IGNITE_PIN,OUTPUT);
-  digitalWrite(IGNITE_PIN,HIGH);
-  
+  if (millis() - PAYTIME >= 16000) {
+      
+    // 12s passed → trigger payload
+      deploypayload();
+    }
 
+  if (millis() - PARATIME >= 12000) {
+      // 16s passed → trigger parachute
+      deployparachute();
+  }
+  
 }
 
 void deploypayload() {

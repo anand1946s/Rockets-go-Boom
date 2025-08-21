@@ -8,14 +8,14 @@
 #include "bmp180.h"
 #include "config.h"
 
-#define LORA_SS 10
-#define LORA_RST 9
+#define LORA_SS 7
+#define LORA_RST 6
 #define LORA_DIO0 2
 #define LORA_FREQ 433E6
 
 bool initLoRa() {
     LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
-    
+
     if (!LoRa.begin(LORA_FREQ)) {
         LoRa.setTxPower(10); // 10 dBm = 10 mW
 
