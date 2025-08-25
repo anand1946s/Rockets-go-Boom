@@ -16,7 +16,6 @@ SysStatus systemStatus = OK;
 
 unsigned long lastTime = 0;
 unsigned long lastSendTime = 0;
-const unsigned long Interval = 1000;
 const unsigned long sendInterval =2000;
 
 unsigned long PAYTIME = 0;
@@ -29,14 +28,14 @@ File datafile;
 void setup() {
 
   if(initIMU() && initBMP() && initLoRa() && initSD()){
-    Serial.println("sensors ok!!!");
+    //Serial.println("sensors ok!!!");
     systemStatus = OK;
     calibrateIMU();
 
     datafile = SD.open("samples.csv",FILE_WRITE);
     if(!datafile){
       systemStatus = HALT;
-      Serial.println("sd card failed");
+      //Serial.println("sd card failed");
       return ;
     } 
     else{
@@ -72,11 +71,13 @@ void loop() {
         currentMode = LAUNCH;
       } 
       else {
-      currentMode = DEBUGGING;  
+      currentMode = DEBUGGING; 
+      systemStatus = HALT; 
           }
   }
   else if(cmd == "ABORT"){
     currentMode = IDLE;
+    systemStatus = HALT;
   }
 
   if (currentMode == INIT) {
@@ -85,16 +86,14 @@ void loop() {
 
   if (currentMode == LAUNCH) {
 
-    if (millis() - lastTime >= Interval) {
-      lastTime = millis();
-      
-      modeManager();
-      datafile.flush();
-    }
+    modeManager();
 
     if (millis() - lastSendTime >= sendInterval) {
       lastSendTime = millis();
       sendData();
+    }
+    if(lastSendTime>=30000){ // closes file to save power
+      datafile.close();
     }
   }
 }

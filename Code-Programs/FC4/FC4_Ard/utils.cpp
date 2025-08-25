@@ -8,6 +8,7 @@
 
 // TEMP system check: always OK for now
 SysStatus systemCheck() {
+    // some logic stuff if any.:D
     
     return OK;
 }
@@ -27,4 +28,9 @@ void logData() {
     datafile.println(data);
 
     
+}
+
+
+void countdown(){
+    sendStatus("SYSTEM OK...");
 }

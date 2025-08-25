@@ -21,16 +21,17 @@ SysStatus checkSystemStatus() {
 
 void modeManager() {
   // Recheck system health at every phase
-  systemStatus = checkSystemStatus();
-  if (systemStatus != OK) {
-    currentMode = DEBUGGING;
-    return;
-  }
-
+  
   
 
   switch (currentMode) {
     case IDLE:
+      systemStatus = checkSystemStatus();
+      if (systemStatus != OK) {
+        currentMode = DEBUGGING;
+        
+      }
+
       break;
 
     case INIT:
@@ -49,12 +50,12 @@ void modeManager() {
       launch();
       break;
 
-    case TRIG1:
-      deploypayload();
+    case TRIG1: // para trigger
+      deployparachute();    
       break;
 
-    case TRIG2:
-      deployparachute();
+    case TRIG2: //payload trigger
+      deploypayload();
       break;
   }
 }
@@ -63,40 +64,54 @@ bool initialize() {
   bool imuOK = initIMU();
   bool bmpOK = initBMP();
   sendStatus("Ready to launch");
-  return imuOK && bmpOK;
+  if( imuOK && bmpOK){
+    currentMode = ARMING;
+    return true;
+  }
+  else{
+    currentMode = DEBUGGING;
+    return false;
+  }
+  //return imuOK && bmpOK;
   
 }
 
 
 
 void debugging() {
-  sendStatus("Debugging Mode: Check sensors and reset.");
-  delay(1000);
+  sendStatus("Critical ERROR occurred");
+  delay(500);
 }
 
 void launch() {
   logData();
+  if (millis() - PARATIME >= 12000) {
+      // 12s passed → trigger parachute
+      currentMode = TRIG1;
+
+  }
+  
   if (millis() - PAYTIME >= 16000) {
       
-    // 12s passed → trigger payload
-      deploypayload();
+    // 16s passed → trigger payload
+      currentMode = TRIG2;
     }
 
-  if (millis() - PARATIME >= 12000) {
-      // 16s passed → trigger parachute
-      deployparachute();
-  }
+  
+  
   
 }
 
 void deploypayload() {
-  pinMode(PAYLOAD_PIN,OUTPUT);
+  
   digitalWrite(PAYLOAD_PIN, HIGH);
   sendStatus("Payload deployed!");
+  currentMode = LAUNCH;
 }
 
 void deployparachute() {
-  pinMode(PARACHUTE_PIN,OUTPUT);
+  
   digitalWrite(PARACHUTE_PIN, HIGH);
   sendStatus("Parachute deployed!");
+  currentMode = LAUNCH;
 }

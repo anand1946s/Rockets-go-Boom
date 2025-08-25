@@ -9,7 +9,6 @@ enum SysStatus { OK, HALT };
 //pins
 const int PARACHUTE_PIN = 9;
 const int PAYLOAD_PIN = 8;
-const int IGNITE_PIN = 7;
 const int SD_CS =10;
 
 // Timers
