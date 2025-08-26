@@ -16,19 +16,28 @@ SysStatus systemStatus = OK;
 
 unsigned long lastTime = 0;
 unsigned long lastSendTime = 0;
-const unsigned long Interval = 1000;
 const unsigned long sendInterval =2000;
+
+unsigned long PAYTIME = 0;
+unsigned long PARATIME = 0;
+
+
 
 File datafile;
 
 void setup() {
 
   if(initIMU() && initBMP() && initLoRa() && initSD()){
+    //Serial.println("sensors ok!!!");
     systemStatus = OK;
     calibrateIMU();
 
     datafile = SD.open("samples.csv",FILE_WRITE);
-    if(!datafile) systemStatus = HALT;
+    if(!datafile){
+      systemStatus = HALT;
+      //Serial.println("sd card failed");
+      return ;
+    } 
     else{
       datafile.println(F("T(ms),Ax,Ay,Az,Gx,Gy,Gz,Alti,Pre,Temp"));
       datafile.flush();
@@ -38,7 +47,8 @@ void setup() {
     pinMode(PAYLOAD_PIN, OUTPUT);
     pinMode(PARACHUTE_PIN, OUTPUT);
     
-    sendStatus("All good");
+    if(systemStatus == OK) sendStatus("All good");
+    
   }
   else{
     systemStatus = HALT;
@@ -54,12 +64,20 @@ void loop() {
     currentMode = INIT;
   } 
   else if (cmd == "LAUNCH") {
+    PARATIME = millis();
+    PAYTIME = millis();
+
       if (checkSystemStatus() == OK) {
         currentMode = LAUNCH;
       } 
       else {
-      currentMode = DEBUGGING;  // or SAFE, if you use that
+      currentMode = DEBUGGING; 
+      systemStatus = HALT; 
           }
+  }
+  else if(cmd == "ABORT"){
+    currentMode = IDLE;
+    systemStatus = HALT;
   }
 
   if (currentMode == INIT) {
@@ -67,15 +85,15 @@ void loop() {
   }
 
   if (currentMode == LAUNCH) {
-    if (millis() - lastTime >= Interval) {
-      lastTime = millis();
-      modeManager();
-      datafile.flush();
-    }
+
+    modeManager();
 
     if (millis() - lastSendTime >= sendInterval) {
       lastSendTime = millis();
       sendData();
+    }
+    if(lastSendTime>=30000){ // closes file to save power
+      datafile.close();
     }
   }
 }
