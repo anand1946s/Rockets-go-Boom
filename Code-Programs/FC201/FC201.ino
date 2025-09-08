@@ -1,3 +1,12 @@
+//Guys we write the main logic in this file.The current one is a sample and have to be changed.
+// We are using FreeRTOS for ESP32.its basically an efficient way of assigning functions as tasks with priorities.
+//more priority task is executed first. refer yt 
+//Do check using freertos
+// also the remaining files will store the functions for modules.represented by names.
+//we simply include them in mode.cpp and use them here.thats the logic 
+
+// every module has 2 files one with .h and other with .cpp. we define the function names in .h(header file) and actual definition in cpp file
+
 #include <Arduino.h>
 #include "imu.h"
 #include "bmp180.h"
@@ -7,7 +16,7 @@
 #include "mode.h"
 #include "config.h"
 
-QueueHandle_t sensorQueue;
+QueueHandle_t sensorQueue;       
 
 typedef struct {
   unsigned long time;
