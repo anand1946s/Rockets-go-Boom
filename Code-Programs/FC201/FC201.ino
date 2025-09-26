@@ -1,97 +1,147 @@
-//Guys we write the main logic in this file.The current one is a sample and have to be changed.
-// We are using FreeRTOS for ESP32.its basically an efficient way of assigning functions as tasks with priorities.
-//more priority task is executed first. refer yt 
-//Do check using freertos
-// also the remaining files will store the functions for modules.represented by names.
-//we simply include them in mode.cpp and use them here.thats the logic 
-
-// every module has 2 files one with .h and other with .cpp. we define the function names in .h(header file) and actual definition in cpp file
-
 #include <Arduino.h>
 #include "imu.h"
-#include "bmp180.h"
+#include "pre.h"       // BMP3XX module
 #include "lora.h"
-#include "sdcard.h"
+#include "sd.h"
 #include "gps.h"
 #include "mode.h"
 #include "config.h"
+    // shared SensorData struct
 
-QueueHandle_t sensorQueue;       
+QueueHandle_t loggerQueue;
+QueueHandle_t telemetryQueue;
 
-typedef struct {
-  unsigned long time;
-  float ax, ay, az;
-  float gx, gy, gz;
-  float pressure;
-  float temperature;
-} SensorData;
 
 // ------------------- TASKS ----------------------
 
+// Task: Read sensors and enqueue data
 void sensorTask(void *pvParameters) {
-  SensorData data;
-  for (;;) {
-    data.time = millis();
-    readIMU(&data.ax, &data.ay, &data.az, &data.gx, &data.gy, &data.gz);
-    readBMP(&data.pressure, &data.temperature);
+    SensorData data;
+    const TickType_t delayTicks = 20 / portTICK_PERIOD_MS; // 50 Hz
 
-    xQueueSend(sensorQueue, &data, portMAX_DELAY);
+    for (;;) {
+        data.time = millis();
+        data.lat = NAN;
+        data.lon = NAN;
+        data.gpsAlt = NAN;
 
-    vTaskDelay(20 / portTICK_PERIOD_MS); // 50Hz
-  }
+        readIMU(&data.ax, &data.ay, &data.az, &data.gx, &data.gy, &data.gz);
+        readPressure(&data.pre, &data.temp);
+        data.alti = calculateAltitude(data.pre);
+
+        // Send to both queues
+        xQueueSend(loggerQueue, &data, 0);     // non-blocking, drops if full
+        xQueueSend(telemetryQueue, &data, 0); // non-blocking, drops if full
+
+        vTaskDelay(delayTicks);
+    }
 }
 
+
+// Task: Log sensor data to SD (and optionally LoRa)
+// Task: Log only the latest sensor data from queue (non-blocking)
 void loggerTask(void *pvParameters) {
-  SensorData data;
-  for (;;) {
-    if (xQueueReceive(sensorQueue, &data, portMAX_DELAY) == pdTRUE) {
-      logData(data);   // write to SD + LoRa
+    SensorData data;
+    SensorData tmp;
+
+    for (;;) {
+        // Try to read one element without blocking
+        if (xQueueReceive(loggerQueue, &data, 0) == pdTRUE) {
+            // Drain the rest of the queue to free space
+            while (xQueueReceive(loggerQueue, &tmp, 0) == pdTRUE) {
+                data = tmp; // keep the most recent sample
+            }
+
+            // Log the latest data
+            logData(data); // write to SD
+            // sendCommand("DATA"); // optional LoRa transmission
+        }
+
+        // Short delay to yield to other tasks (non-blocking)
+        vTaskDelay(1 / portTICK_PERIOD_MS);
     }
-  }
 }
 
-void gpsTask(void *pvParameters) {
-  for (;;) {
-    if (currentMode == RECOVERY) {
-      readGPS();
+
+// Task: Read GPS periodically
+void telemetryTask(void *pvParameters) {
+    const TickType_t delayTicks = 1000 / portTICK_PERIOD_MS; // 1 Hz
+    SensorData data;
+
+    for (;;) {
+        // Try to get latest sample
+        if (xQueueReceive(telemetryQueue, &data, 0) == pdTRUE) {
+            SensorData tmp;
+            while (xQueueReceive(telemetryQueue, &tmp, 0) == pdTRUE) {
+                data = tmp; // keep most recent
+            }
+
+            // GPS only in recovery
+            if (currentMode == RECOVERY) {
+                double lat, lon;
+                float gpsAlt;
+                if (readGPS(&lat, &lon, &gpsAlt)) {
+                    data.lat = lat;
+                    data.lon = lon;
+                    data.gpsAlt = gpsAlt;
+                } else {
+                    data.lat = NAN;
+                    data.lon = NAN;
+                    data.gpsAlt = NAN;
+                }
+            } else {
+                data.lat = NAN;
+                data.lon = NAN;
+                data.gpsAlt = NAN;
+            }
+
+            // Send out telemetry
+            sendData(data);
+        }
+
+        vTaskDelay(delayTicks);
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS); // 1Hz
-  }
 }
 
+
+// Task: Check and handle commands
 void commandTask(void *pvParameters) {
-  for (;;) {
-    String cmd = checkCmd();
-    if (cmd.length() > 0) {
-      handleCommand(cmd);
+    const TickType_t delayTicks = 100 / portTICK_PERIOD_MS;
+
+    for (;;) {
+        String c = checkCmd();
+        modeManager();
+        vTaskDelay(delayTicks);
     }
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-  }
 }
 
 // ------------------- SETUP ----------------------
 
 void setup() {
-  Serial.begin(115200);
+    //Serial.begin(115200);
 
-  initIMU();
-  initBMP();
-  initLoRa();
-  initSD();
-  initGPS();
+    // Initialize all modules
+    
 
-  // Create queue for sensor data
-  sensorQueue = xQueueCreate(10, sizeof(SensorData));
+    // Create queue for sensor data
+    sensorQueue = xQueueCreate(10, sizeof(SensorData));
 
-  // Core 1 (sensor + logging)
-  xTaskCreatePinnedToCore(sensorTask, "Sensor", 4096, NULL, 2, NULL, 1);
-  xTaskCreatePinnedToCore(loggerTask, "Logger", 4096, NULL, 1, NULL, 1);
+    // Create FreeRTOS tasks
 
-  // Core 0 (comms + gps)
-  xTaskCreatePinnedToCore(gpsTask, "GPS", 4096, NULL, 1, NULL, 0);
-  xTaskCreatePinnedToCore(commandTask, "Command", 4096, NULL, 1, NULL, 0);
+    // Core 1: high-priority sensor + logging
+    xTaskCreatePinnedToCore(sensorTask, "Sensor", 4096, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(loggerTask, "Logger", 4096, NULL, 1, NULL, 1);
+
+    // Core 0: GPS + commands
+    xTaskCreatePinnedToCore(gpsTask, "GPS", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(commandTask, "Command", 4096, NULL, 1, NULL, 0);
+
+    // Optional: mode manager as a separate task
+    xTaskCreatePinnedToCore(modeManager, "Mode", 4096, NULL, 2, NULL, 0);
 }
 
+// ------------------- LOOP ----------------------
+
 void loop() {
-  // empty, tasks run independently
+    // Nothing here, all tasks run independently
 }
