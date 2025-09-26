@@ -29,6 +29,8 @@ void modeManager(void *pvParameters) {
         switch (currentMode) {
             case IDLE:
                 if (checkCmd() == "ARM") {
+                    // led blink: for LoRa connection & waiting for LAUNCH cmd
+                    // sent status through lora
                     initialize();
                     setMode(INIT);
                 }
@@ -36,6 +38,8 @@ void modeManager(void *pvParameters) {
 
             case INIT:
                 if (initialize() && checkHealth() == SYS_OK) {
+                    // send system health "SYS_OK msg"
+                    
                     String cmd = checkCmd();
                     if (cmd == "LAUNCH") {
                         setMode(LAUNCH);

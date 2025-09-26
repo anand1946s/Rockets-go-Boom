@@ -11,10 +11,23 @@
 QueueHandle_t loggerQueue;
 QueueHandle_t telemetryQueue;
 
+//Todos
+// Add buzzer pin to work at recovery(HIGH during RECOVERY)
+// send system health via LoRa
+// LED test for different states with either 5 leds or utility board 
+// Utility board leds for LoRa indication
+// Correct decision for "How to detect apogee"
+//
+
+
+
+
 
 // ------------------- TASKS ----------------------
 
 // Task: Read sensors and enqueue data
+
+//currentMode= LAUNCH
 void sensorTask(void *pvParameters) {
     SensorData data;
     const TickType_t delayTicks = 20 / portTICK_PERIOD_MS; // 50 Hz
@@ -40,6 +53,7 @@ void sensorTask(void *pvParameters) {
 
 // Task: Log sensor data to SD (and optionally LoRa)
 // Task: Log only the latest sensor data from queue (non-blocking)
+//currentMode= LAUNCH
 void loggerTask(void *pvParameters) {
     SensorData data;
     SensorData tmp;
@@ -63,7 +77,8 @@ void loggerTask(void *pvParameters) {
 }
 
 
-// Task: Read GPS periodically
+// Task: Read GPS periodically also
+//Add cmand recieving part here
 void telemetryTask(void *pvParameters) {
     const TickType_t delayTicks = 1000 / portTICK_PERIOD_MS; // 1 Hz
     SensorData data;
@@ -105,6 +120,8 @@ void telemetryTask(void *pvParameters) {
 
 
 // Task: Check and handle commands
+
+//Change to modemanaging+event detection(Change name)
 void commandTask(void *pvParameters) {
     const TickType_t delayTicks = 100 / portTICK_PERIOD_MS;
 
@@ -112,6 +129,7 @@ void commandTask(void *pvParameters) {
         String c = checkCmd();
         modeManager();
         vTaskDelay(delayTicks);
+        //mid flight events
     }
 }
 

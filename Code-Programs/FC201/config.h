@@ -20,6 +20,12 @@ enum SystemHealth {
 
 // ------------------- Pin definitions -------------------
 const int PARA_PIN = 25;   // Parachute trigger
+//GPIO 3
+//GPIO 46
+//GPIO 10
+//GPIO 48 
+//GPIO 47 Green
+//GPIO 23 Blue
 const int PAY_PIN  = 26;   // Payload trigger
 const int SD_CS    = 5;    // SD card CS
 

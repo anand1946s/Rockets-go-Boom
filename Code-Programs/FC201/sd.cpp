@@ -46,6 +46,7 @@ void logData(const SensorData &data) {
         logFile.print(data.temp);
         logFile.print(",");
         logFile.println(data.alti);
+        // gps data also to be added
 
         logFile.close();
     }
