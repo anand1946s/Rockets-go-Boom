@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "pre.h"
 #include <Adafruit_BMP3XX.h>
 
@@ -19,8 +20,9 @@ bool initPressureSensor() {
 
     bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
     bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
-    bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_3);
-    bmp.setOutputDataRate(BMP_ODR_50_HZ);
+    bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+    bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+
 
     alti = 0.0f;
     return true;

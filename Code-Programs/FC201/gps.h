@@ -2,12 +2,13 @@
 #define GPS_H
 
 #include <Arduino.h>
+#include "data.h"
 
 // Initialize GPS module
 bool initGPS();
 
 // Read GPS data
-void readGPS();
+bool readGPS(double *lat, double *lon, float *alt);
 
 // Optional: get last latitude/longitude
 float getLatitude();

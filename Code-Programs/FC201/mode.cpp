@@ -1,6 +1,8 @@
+#include <Arduino.h>
 #include "mode.h"
 #include "config.h"
 #include "imu.h"
+#include "pre.h"
 #include "lora.h"
 #include "sd.h"
 #include "gps.h"
@@ -9,9 +11,11 @@ FlightMode currentMode = IDLE;
 SystemHealth sysHealth = SYS_OK;
 
 SystemHealth checkHealth() {
+
     // Example health logic:
     // Check if all sensors initialized properly
     // Return SYS_OK or SYS_HALT
+    
     return SYS_OK;
 }
 

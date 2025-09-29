@@ -2,19 +2,14 @@
 #define LORA_H
 
 #include <Arduino.h>
+#include <LoRa.h>
+#include "config.h"
+#include "data.h"
 
-// Initialize LoRa radio
 bool initLoRa();
-
-// Send command/data string
-void sendCommand(const String &msg);
-
-bool sendData(const SensorData &data);
-
-// Receive data (returns "" if none)
+void sendCommand(const String &cmd);
+String checkCmd();      // needed for mode.cpp
 String receiveData();
-
-// Global command string (last received)
-extern String cmd;
+bool sendData(const SensorData &data);
 
 #endif

@@ -2,6 +2,7 @@
 #define IMU_H
 
 #include <Arduino.h>
+#include "data.h"
 
 // Function prototypes
 bool initIMU();

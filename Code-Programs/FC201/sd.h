@@ -1,25 +1,6 @@
-#ifndef SD_H
-#define SD_H
-
+#pragma once
 #include <Arduino.h>
+#include "data.h"
 
-// --- Sensor Data Structure (shared everywhere) ---
-typedef struct {
-  unsigned long time;
-  float ax, ay, az;
-  float gx, gy, gz;
-  float pre;
-  float temp;
-  float alti;
-
-  double lat;
-  double lon;
-  float gpsAlt;
-
-} SensorData;
-
-// --- Function Prototypes ---
-bool initSD(uint8_t csPin);
+bool initSD(uint8_t SD_CS);
 void logData(const SensorData &data);
-
-#endif

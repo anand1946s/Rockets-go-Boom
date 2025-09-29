@@ -15,5 +15,6 @@ SystemHealth checkHealth();
 bool checkLaunch();
 void setMode(FlightMode newMode);
 void modeManager(void *pvParameters);  // FreeRTOS task
+bool initialize();
 
 #endif

@@ -2,7 +2,7 @@
 // can use libraries as esp32 ha enough memory.
 // may also try using wire library(bare metal i2c coding)
 
-
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_LSM6DSO32.h>
 
